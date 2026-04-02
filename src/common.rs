@@ -941,6 +941,10 @@ pub fn is_modifier(evt: &KeyEvent) -> bool {
 
 pub fn check_software_update() {
     if is_custom_client() {
+        let opt = LocalConfig::get_option(keys::OPTION_ENABLE_CHECK_UPDATE);
+        if config::option2bool(keys::OPTION_ENABLE_CHECK_UPDATE, &opt) {
+            std::thread::spawn(move || allow_err!(do_check_custom_update()));
+        }
         return;
     }
     let opt = LocalConfig::get_option(keys::OPTION_ENABLE_CHECK_UPDATE);
@@ -994,6 +998,40 @@ pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
             }
         }
         *SOFTWARE_UPDATE_URL.lock().unwrap() = response_url;
+    } else {
+        *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
+    }
+    Ok(())
+}
+
+#[tokio::main(flavor = "current_thread")]
+pub async fn do_check_custom_update() -> hbb_common::ResultType<()> {
+    const UPDATE_URL: &str =
+        "https://MMCInternal.github.io/MMC-Remote-Connect/version.json";
+
+    #[derive(serde_derive::Deserialize)]
+    struct CustomVersionResponse {
+        version: String,
+        download_url: String,
+    }
+
+    let client = create_http_client_async(TlsType::Rustls, false);
+    let resp = client.get(UPDATE_URL).send().await?;
+    let bytes = resp.bytes().await?;
+    let parsed: CustomVersionResponse = serde_json::from_slice(&bytes)?;
+
+    if get_version_number(&parsed.version) > get_version_number(crate::VERSION) {
+        let download_url = parsed.download_url.clone();
+        #[cfg(feature = "flutter")]
+        {
+            let mut m = HashMap::new();
+            m.insert("name", "check_software_update_finish");
+            m.insert("url", &download_url);
+            if let Ok(data) = serde_json::to_string(&m) {
+                let _ = crate::flutter::push_global_event(crate::flutter::APP_TYPE_MAIN, data);
+            }
+        }
+        *SOFTWARE_UPDATE_URL.lock().unwrap() = download_url;
     } else {
         *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
     }
