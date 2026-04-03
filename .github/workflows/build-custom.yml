@@ -11,7 +11,7 @@ env:
   FLUTTER_VERSION: "3.24.5"
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
-  APP_NAME: "MMHelp"
+  APP_NAME: "MMCRemoteConnect"
 
 jobs:
   generate-bridge:
@@ -144,7 +144,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}-${{ github.run_number }}
-          name: "MMHelp v${{ steps.version.outputs.version }}"
+          name: "MMC Remote Connect v${{ steps.version.outputs.version }}"
           files: ./SignOutput/${{ env.APP_NAME }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
           cat > version.json << EOF
           {
             "version": "${{ needs.build-windows.outputs.version }}",
-            "download_url": "https://github.com/MMCInternal/MMC-Remote-Connect/releases/latest/download/MMHelp.exe"
+            "download_url": "https://github.com/MMCInternal/MMC-Remote-Connect/releases/latest/download/MMCRemoteConnect.exe"
           }
           EOF
 

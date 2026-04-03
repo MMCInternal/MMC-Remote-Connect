@@ -1,11 +1,11 @@
 [package]
-name = "MMHelp"
+name = "MMCRemoteConnect"
 version = "1.4.6"
 authors = ["rma1@magicmicro.com"]
 edition = "2021"
 build= "build.rs"
-description = "MMHelp"
-default-run = "MMHelp"
+description = "MMC Remote Connect"
+default-run = "MMCRemoteConnect"
 rust-version = "1.75"
 
 [lib]
